@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tv_show.name }} | Explorateur TMDB{% endblock %}
+
+{% block additional_styles %}
+.tv-backdrop {
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+.tv-backdrop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+.tv-poster {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.actor-card {
+    width: 150px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+.actors-container {
+    overflow-x: auto;
+    padding-bottom: 15px;
+}
+.season-card {
+    transition: transform 0.3s;
+}
+.season-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+{% endblock %}
+
+{% block content %}
+    <!-- En-tête avec backdrop de la série -->
+    <div class="tv-backdrop" style="background-image: url('{{ image_base_url }}{{ tv_show.backdrop_path }}');">
+        <div class="tv-backdrop-overlay">
+            <div class="container text-center">
+                <h1 class="display-4">{{ tv_show.name }}</h1>
+                {% if tv_show.tagline %}
+                <p class="lead">{{ tv_show.tagline }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="container py-4">
+        <div class="mb-3">
+            <a href="{{ url_for('tv_shows') }}" class="btn btn-outline-secondary">← Retour aux séries</a>
+        </div>
+        
+        <div class="row">
+            <!-- Colonne gauche (poster et infos) -->
+            <div class="col-md-4 mb-4">
+                {% if tv_show.poster_path %}
+                <img src="{{ image_base_url }}{{ tv_show.poster_path }}" class="img-fluid rounded tv-poster mb-3" alt="{{ tv_show.name }}">
+                {% else %}
+                <div class="bg-secondary text-white rounded p-5 text-center mb-3">
+                    <span>Pas d'image disponible</span>
+                </div>
+                {% endif %}
+                
+                <div class="card">
+                    <div class="card-header">Informations</div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Première diffusion:</span>
+                            <span>{{ tv_show.first_air_date }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Note:</span>
+                            <span class="badge bg-warning text-dark">{{ tv_show.vote_average|round(1) }}/10</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Saisons:</span>
+                            <span>{{ tv_show.number_of_seasons }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Épisodes:</span>
+                            <span>{{ tv_show.number_of_episodes }}</span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>Genres:</span> 
+                            {% for genre in tv_show.genres %}
+                                <span class="badge bg-primary me-1">{{ genre.name }}</span>
+                            {% endfor %}
+                        </li>
+                        {% if tv_show.networks %}
+                        <li class="list-group-item">
+                            <span>Réseaux:</span><br>
+                            {% for network in tv_show.networks %}
+                                <span class="badge bg-secondary me-1">{{ network.name }}</span>
+                            {% endfor %}
+                        </li>
+                        {% endif %}
+                        {% if tv_show.status %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Statut:</span>
+                            <span>{{ tv_show.status }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Colonne droite (synopsis, casting et saisons) -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">Synopsis</div>
+                    <div class="card-body">
+                        {% if tv_show.overview %}
+                            <p>{{ tv_show.overview }}</p>
+                        {% else %}
+                            <p class="text-muted">Aucun synopsis disponible.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Casting -->
+                {% if tv_show.credits and tv_show.credits.cast %}
+                <div class="card mb-4">
+                    <div class="card-header">Casting principal</div>
+                    <div class="card-body">
+                        <div class="d-flex actors-container">
+                            {% for actor in tv_show.credits.cast[:10] %}
+                            <div class="card actor-card">
+                                {% if actor.profile_path %}
+                                <img src="{{ image_base_url }}{{ actor.profile_path }}" class="card-img-top" alt="{{ actor.name }}">
+                                {% else %}
+                                <div class="card-img-top bg-light text-center py-4">
+                                    <span class="text-muted">Photo non disponible</span>
+                                </div>
+                                {% endif %}
+                                <div class="card-body p-2">
+                                    <h6 class="card-title mb-0">{{ actor.name }}</h6>
+                                    <p class="card-text small text-muted">{{ actor.character }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
