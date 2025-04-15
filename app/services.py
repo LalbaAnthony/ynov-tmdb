@@ -51,8 +51,8 @@ def run_etl(page=1):
     create_db()
     clear_media()
     
-    movies_data = get_popular_movies(page)
-    tv_data = get_popular_tv_shows(page)
+    movies_data = get_popular_movies(page=page)
+    tv_data = get_popular_tv_shows(page=page)
     
     medias = []
     for movie in movies_data.get("results", []):
