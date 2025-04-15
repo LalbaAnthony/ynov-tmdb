@@ -31,7 +31,6 @@ def index():
 def now_playing():
     page = request.args.get('page', 1, type=int)
     genre_id = request.args.get('genre', type=int)
-    # get genres similarly...
     movies_data = get_popular_movies(page, genre_id)
     return render_template('movie/movie_list.html',
                            movies=movies_data.get('results', []),

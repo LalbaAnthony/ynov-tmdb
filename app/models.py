@@ -1,7 +1,7 @@
 # app/models.py
 import sqlite3
 
-DB_PATH = "media.db"
+DB_PATH = "database.db"
 
 def get_db_connection():
     """Returns a new connection to the SQLite database."""
@@ -24,6 +24,15 @@ def create_db():
             vote_average REAL
         )
     ''')
+    c.execute("DROP TABLE IF EXISTS towatch")
+    c.execute('''
+        CREATE TABLE towatch (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            api_id INTEGER NOT NULL,
+            media_type TEXT NOT NULL CHECK(media_type IN ('movie', 'tv')),
+            added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ''')
     conn.commit()
     conn.close()
 
@@ -31,6 +40,13 @@ def clear_media():
     conn = get_db_connection()
     c = conn.cursor()
     c.execute("DELETE FROM media")
+    conn.commit()
+    conn.close()
+
+def clear_towatch():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM towatch")
     conn.commit()
     conn.close()
 
@@ -78,6 +94,19 @@ def fetch_media(page=1, limit=20):
             "vote_average": row[7]
         })
     return results
+
+def insert_towatch(item):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO towatch (api_id, media_type)
+        VALUES (?, ?)
+    """, (
+        item['api_id'],
+        item['media_type']
+    ))
+    conn.commit()
+    conn.close()
 
 def fetch_suggestion(media_type=None, min_vote_average=None):
     conn = get_db_connection()

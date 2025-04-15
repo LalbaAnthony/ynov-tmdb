@@ -3,7 +3,7 @@ import os
 import requests
 from dotenv import load_dotenv
 
-# Charge l'environnement (vous pouvez aussi faire cela dans un fichier de config)
+# Charge l'environnement
 load_dotenv()
 
 API_KEY = os.environ.get('API_KEY')
@@ -45,18 +45,18 @@ def get_popular_tv_shows(page=1, genre_id=None):
         params["with_genres"] = genre_id
     return call_tmdb_api("/tv/popular", params)
 
-def run_etl():
+def run_etl(page=1):
     from app.models import create_db, clear_media, insert_media  # Import here to avoid circular imports
-    print("Starting ETL process...")
+    print("Starting importing data from TMDB into media table...")
     create_db()
     clear_media()
     
-    movies_data = get_popular_movies(page=1)
-    tv_data = get_popular_tv_shows(page=1)
+    movies_data = get_popular_movies(page)
+    tv_data = get_popular_tv_shows(page)
     
-    merged = []
+    medias = []
     for movie in movies_data.get("results", []):
-        merged.append({
+        medias.append({
             "api_id": movie.get("api_id"),
             "media_type": "movie",
             "title": movie.get("title"),
@@ -67,7 +67,7 @@ def run_etl():
             "vote_average": movie.get("vote_average", 0)
         })
     for tv in tv_data.get("results", []):
-        merged.append({
+        medias.append({
             "api_id": tv.get("api_id"),
             "media_type": "tv",
             "title": tv.get("name"),
@@ -78,10 +78,10 @@ def run_etl():
             "vote_average": tv.get("vote_average", 0)
         })
     
-    for item in merged:
-        insert_media(item)
+    for media in medias:
+        insert_media(media)
     
-    print("ETL process completed successfully.")
+    print("media insert completed successfully.")
 
 def get_image_base_url():
     return IMAGE_BASE_URL
