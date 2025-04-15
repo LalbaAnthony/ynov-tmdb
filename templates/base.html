@@ -47,6 +47,9 @@
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'tv_shows' %}active{% endif %}" href="{{ url_for('tv_shows') }}">Séries TV</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'suggestion' %}active{% endif %}" href="{{ url_for('suggestion') }}">Suggestion</a>
+                    </li>
                 </ul>
                 <form class="d-flex" action="{{ url_for('index') }}" method="GET">
                     <input class="form-control me-2" type="search" name="query" placeholder="Rechercher un film...">

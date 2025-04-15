@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Suggestion de film ou de série</h1>
+<form method="post" action="{{ url_for('suggestion') }}">
+    <div class="form-group mb-4">
+        <label for="media_type">Type :</label>
+        <select name="media_type" id="media_type" class="form-control">
+            <option value="both">Les deux</option>
+            <option value="movie">Films</option>
+            <option value="tv">Séries</option>
+        </select>
+    </div>
+    <div class="form-group mb-4">
+        <label for="min_vote">Note minimale :</label>
+        <input type="number" name="min_vote" id="min_vote" class="form-control" step="0.1" placeholder="Ex : 7.0">
+    </div>
+    <button type="submit" class="btn btn-primary">Obtenir une suggestion</button>
+</form>
+{% endblock %}
