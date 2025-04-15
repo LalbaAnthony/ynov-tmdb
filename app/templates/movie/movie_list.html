@@ -9,9 +9,9 @@
         <!-- Filtre par genre -->
         <div class="dropdown">
             <button class="btn btn-outline-primary dropdown-toggle" type="button" id="genreDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                {% if selected_genre %}
+                {% if genre_id %}
                     {% for genre in genres %}
-                        {% if genre.id == selected_genre %}
+                        {% if genre.id == genre_id %}
                             Genre: {{ genre.name }}
                         {% endif %}
                     {% endfor %}
@@ -20,10 +20,10 @@
                 {% endif %}
             </button>
             <ul class="dropdown-menu genre-dropdown" aria-labelledby="genreDropdown">
-                <li><a class="dropdown-item {% if not selected_genre %}active{% endif %}" href="{{ url_for(endpoint) }}">Tous les genres</a></li>
+                <li><a class="dropdown-item {% if not genre_id %}active{% endif %}" href="{{ url_for(endpoint) }}">Tous les genres</a></li>
                 <li><hr class="dropdown-divider"></li>
                 {% for genre in genres %}
-                    <li><a class="dropdown-item {% if selected_genre == genre.id %}active{% endif %}" href="{{ url_for(endpoint, genre=genre.id) }}">{{ genre.name }}</a></li>
+                    <li><a class="dropdown-item {% if genre_id == genre.id %}active{% endif %}" href="{{ url_for(endpoint, genre_id=genre.id) }}">{{ genre.name }}</a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -57,7 +57,7 @@
     <!-- Message si aucun film trouvé -->
     {% if not movies %}
     <div class="alert alert-info text-center mt-5">
-        Aucun film trouvé pour ce genre.
+        Aucun film trouvé.
     </div>
     {% endif %}
     
@@ -68,7 +68,7 @@
             <ul class="pagination">
                 {% if page > 1 %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page - 1 }}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}">Précédent</a>
+                    <a class="page-link" href="?page={{ page - 1 }}{% if genre_id %}&genre={{ genre_id }}{% endif %}">Précédent</a>
                 </li>
                 {% else %}
                 <li class="page-item disabled">
@@ -81,13 +81,13 @@
                 
                 {% for i in range(start_page, end_page + 1) %}
                 <li class="page-item {% if i == page %}active{% endif %}">
-                    <a class="page-link" href="?page={{ i }}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}">{{ i }}</a>
+                    <a class="page-link" href="?page={{ i }}{% if genre_id %}&genre={{ genre_id }}{% endif %}">{{ i }}</a>
                 </li>
                 {% endfor %}
                 
                 {% if page < total_pages %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page + 1 }}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}">Suivant</a>
+                    <a class="page-link" href="?page={{ page + 1 }}{% if genre_id %}&genre={{ genre_id }}{% endif %}">Suivant</a>
                 </li>
                 {% else %}
                 <li class="page-item disabled">

@@ -69,15 +69,29 @@ def insert_media(item):
     conn.commit()
     conn.close()
 
-def fetch_media(page=1, limit=20):
+def fetch_media(media_type='both', page=1, limit=20):
     conn = db_connection()
     c = conn.cursor()
     offset = (page - 1) * limit
-    c.execute("""
+
+    params = []
+    query = """
         SELECT api_id, media_type, title, original_title, release_date, overview, poster_path, vote_average 
         FROM media 
-        LIMIT ? OFFSET ?
-    """, (limit, offset))
+    """
+    if media_type == 'movie':
+        query += " WHERE media_type = 'movie'"
+    elif media_type == 'tv':
+        query += " WHERE media_type = 'tv'"
+    else :
+        query += " WHERE media_type IN ('movie', 'tv')"
+
+    if limit and page:
+        params.append(limit)
+        params.append(offset)
+        query += " LIMIT ? OFFSET ?"
+    
+    c.execute(query, params)
     rows = c.fetchall()
     conn.close()
     
@@ -143,16 +157,16 @@ def fetch_suggestion(media_type=None, min_vote_average=None):
         return None
 
 def fill_media_from_tmdb(page=1):
-    from app.tmdb import get_popular_movies, get_popular_tv_shows
+    from app.tmdb import call_tmdb_api, get_movies, get_tv_shows, get_movie_detail, get_tv_show_detail, get_tv_genres, get_movie_genres, get_image_base_url
     print("Starting importing data from TMDB into media table...")
     create_db()
     clear_media()
     
-    movies_data = get_popular_movies(page=page)
-    tv_data = get_popular_tv_shows(page=page)
+    data_movies = get_movies()
+    data_tv = get_tv_shows()
     
     medias = []
-    for movie in movies_data.get("results", []):
+    for movie in data_movies.get("results", []):
         medias.append({
             "api_id": movie.get("api_id"),
             "media_type": "movie",
@@ -163,7 +177,7 @@ def fill_media_from_tmdb(page=1):
             "poster_path": movie.get("poster_path"),
             "vote_average": movie.get("vote_average", 0)
         })
-    for tv in tv_data.get("results", []):
+    for tv in data_tv.get("results", []):
         medias.append({
             "api_id": tv.get("api_id"),
             "media_type": "tv",

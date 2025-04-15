@@ -1,7 +1,7 @@
 - [x] Une page avec avec tout les films actuellement en salle
 - [x] Une page avec la liste des series les plus populaires
 - [x] Pourvoir trier par genre
-- [x] Faire en sorte que l'API puisse être inaccessible et que le site puisse quand même fonctionner: stocker les données dans le local storage ou dans le serveur.
+- [ ] Faire en sorte que l'API puisse être inaccessible et que le site puisse quand même fonctionner: stocker les données dans le local storage ou dans le serveur.
 - [x] Implémentez une suggestion de film ou de série selon des critères choisi par l'utilisateur
 - [x] Séparation du code en trois couches:
   - Application
