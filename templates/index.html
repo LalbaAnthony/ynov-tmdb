@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Films TMDB</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .movie-card {
+            height: 100%;
+            transition: transform 0.3s;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .movie-poster {
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .movie-title {
+            height: 50px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-4">
+        <h1 class="mb-4 text-center">Explorateur de Films</h1>
+
+        <!-- Formulaire de recherche -->
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <form action="/" method="GET" class="d-flex">
+                    <input type="text" name="query" class="form-control me-2" placeholder="Rechercher un film..."
+                        value="{{ query }}">
+                    <button type="submit" class="btn btn-primary">Rechercher</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Affichage des films -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for movie in movies %}
+            <div class="col">
+                <div class="card movie-card h-100">
+                    {% if movie.poster_path %}
+                    <img src="{{ image_base_url }}{{ movie.poster_path }}" class="card-img-top movie-poster"
+                        alt="{{ movie.title }}">
+                    {% else %}
+                    <div
+                        class="card-img-top movie-poster bg-secondary d-flex align-items-center justify-content-center">
+                        <span class="text-white">Pas d'image</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title movie-title">{{ movie.title }}</h5>
+                        <p class="card-text"><small class="text-muted">{{ movie.release_date }}</small></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-warning text-dark">{{ movie.vote_average|round(1) }} / 10</span>
+                            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}"
+                                class="btn btn-sm btn-outline-primary">Détails</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if movies %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Navigation des pages">
+                <ul class="pagination">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page - 1 }}{% if query %}&query={{ query }}{% endif %}">Précédent</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Précédent</span>
+                    </li>
+                    {% endif %}
+
+                    {% for i in range(max(1, page - 2), min(page + 3, total_pages + 1)) %}
+                    <li class="page-item {% if i == page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}{% if query %}&query={{ query }}{% endif %}">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if page < total_pages %} <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page + 1 }}{% if query %}&query={{ query }}{% endif %}">Suivant</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Suivant</span>
+                        </li>
+                        {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
