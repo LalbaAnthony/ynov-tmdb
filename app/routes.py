@@ -1,7 +1,7 @@
 # app/routes.py
 from flask import Blueprint, render_template, request, url_for
 from app.tmdb import call_tmdb_api, get_movies, get_tv_shows, get_movie_detail, get_tv_show_detail, get_tv_genres, get_movie_genres, get_image_base_url
-from app.models import fetch_suggestion
+from app.models import fetch_suggestion, fetch_medias
 
 main = Blueprint('main', __name__)
 
@@ -13,6 +13,14 @@ def index():
 
     movies = get_movies(search=query, page=page, genre_id=genre_id)
     genres = get_movie_genres()
+
+    # If movies is empty, then we need to fetch the movies from the database
+    if not movies.get('results'):
+        movies['results'] = fetch_medias('movie', page=page)
+    
+    # TODO: Uncomment the following lines to debug the fetched movies from DB
+    # print(movies.get('results', [])[0])
+    # print(fetch_medias('movie', page=page)[0])
 
     return render_template(
         'index.html',

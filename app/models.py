@@ -69,7 +69,7 @@ def insert_media(item):
     conn.commit()
     conn.close()
 
-def fetch_media(media_type='both', page=1, limit=20):
+def fetch_medias(media_type='both', page=1, limit=20):
     conn = db_connection()
     c = conn.cursor()
     offset = (page - 1) * limit
@@ -159,12 +159,15 @@ def fetch_suggestion(media_type=None, min_vote_average=None):
 def fill_media_from_tmdb(page=1):
     from app.tmdb import call_tmdb_api, get_movies, get_tv_shows, get_movie_detail, get_tv_show_detail, get_tv_genres, get_movie_genres, get_image_base_url
     print("Starting importing data from TMDB into media table...")
+
     create_db()
-    clear_media()
     
     data_movies = get_movies()
     data_tv = get_tv_shows()
-    
+
+    if len(data_movies.get("results", [])) == 0 and len(data_tv.get("results", [])) == 0:
+            clear_media()
+
     medias = []
     for movie in data_movies.get("results", []):
         medias.append({

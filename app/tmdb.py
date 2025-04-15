@@ -212,10 +212,16 @@ def get_tv_show_detail(show_id):
     return data
 
 def get_tv_genres():
-    return call_tmdb_api("/genre/tv/list")['genres']
+    result = call_tmdb_api("/genre/tv/list")
+    if "genres" in result:
+        return result["genres"]
+    return []
 
 def get_movie_genres():
-    return call_tmdb_api("/genre/movie/list")['genres']
+    result = call_tmdb_api("/genre/movie/list")
+    if "genres" in result:
+        return result["genres"]
+    return []
 
 def get_image_base_url():
     return IMAGE_BASE_URL
