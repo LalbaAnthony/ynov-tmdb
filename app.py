@@ -24,6 +24,30 @@ IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500"
 movie_genres_cache = None
 tv_genres_cache = None
 
+# API Wrapper Function to avoid repetition
+def call_tmdb_api(endpoint, params=None):
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "accept": "application/json"
+    }
+    default_params = {
+        "language": "fr-FR"
+    }
+    if params:
+        default_params.update(params)
+    
+    url = f"{BASE_URL}{endpoint}"
+    response = requests.get(url, headers=headers, params=default_params)
+    
+    print(f"Fetching {url} with params {default_params}")
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error fetching {url}: {response.status_code}")
+        # Return a default value for list-based endpoints; detail endpoints will be checked later.
+        return {"results": [], "total_pages": 0}
+
 # Route principale
 @app.route('/')
 def index():
@@ -85,156 +109,61 @@ def tv_shows():
 
 # Obtenir les films populaires
 def get_popular_movies(page=1, genre_id=None):
-    url = f"{BASE_URL}/movie/popular"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
-    params = {
-        "language": "fr-FR",
-        "page": page
-    }
-    
+    params = {"page": page}
     if genre_id:
         params["with_genres"] = genre_id
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"results": [], "total_pages": 0}
+    return call_tmdb_api("/movie/popular", params)
 
 # Obtenir les films actuellement en salle
 def get_now_playing_movies(page=1, genre_id=None):
-    url = f"{BASE_URL}/movie/now_playing"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
     params = {
-        "language": "fr-FR",
         "page": page,
         "region": "FR"  # Région France pour afficher les films en salle en France
     }
-    
     if genre_id:
         params["with_genres"] = genre_id
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"results": [], "total_pages": 0}
+    return call_tmdb_api("/movie/now_playing", params)
 
 # Obtenir les séries populaires
 def get_popular_tv_shows(page=1, genre_id=None):
-    url = f"{BASE_URL}/tv/popular"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
-    params = {
-        "language": "fr-FR",
-        "page": page
-    }
-    
+    params = {"page": page}
     if genre_id:
         params["with_genres"] = genre_id
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"results": [], "total_pages": 0}
+    return call_tmdb_api("/tv/popular", params)
 
 # Obtenir les genres de films
 def get_movie_genres():
     global movie_genres_cache
-    
     if movie_genres_cache:
         return movie_genres_cache
-    
-    url = f"{BASE_URL}/genre/movie/list"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
-    params = {
-        "language": "fr-FR"
-    }
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        movie_genres_cache = response.json().get('genres', [])
-        return movie_genres_cache
-    else:
-        return []
+    data = call_tmdb_api("/genre/movie/list")
+    movie_genres_cache = data.get('genres', [])
+    return movie_genres_cache
 
 # Obtenir les genres de séries
 def get_tv_genres():
     global tv_genres_cache
-    
     if tv_genres_cache:
         return tv_genres_cache
-    
-    url = f"{BASE_URL}/genre/tv/list"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
-    params = {
-        "language": "fr-FR"
-    }
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        tv_genres_cache = response.json().get('genres', [])
-        return tv_genres_cache
-    else:
-        return []
+    data = call_tmdb_api("/genre/tv/list")
+    tv_genres_cache = data.get('genres', [])
+    return tv_genres_cache
 
 # Rechercher des films
 def search_movies(query, page=1):
-    url = f"{BASE_URL}/search/movie"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
     params = {
         "query": query,
-        "language": "fr-FR",
         "page": page
     }
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"results": [], "total_pages": 0}
+    return call_tmdb_api("/search/movie", params)
 
 # Détails d'un film
 @app.route('/movie/<int:movie_id>')
 def movie_detail(movie_id):
-    url = f"{BASE_URL}/movie/{movie_id}"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
-    params = {
-        "language": "fr-FR",
-        "append_to_response": "credits,videos"
-    }
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        movie = response.json()
+    params = {"append_to_response": "credits,videos"}
+    movie = call_tmdb_api(f"/movie/{movie_id}", params)
+    # Check if movie details exist by verifying if 'results' is not present
+    if "results" not in movie or movie.get("id"):
         return render_template('movie_detail.html', 
                                movie=movie, 
                                image_base_url=IMAGE_BASE_URL,
@@ -245,20 +174,9 @@ def movie_detail(movie_id):
 # Détails d'une série
 @app.route('/tv/<int:tv_id>')
 def tv_detail(tv_id):
-    url = f"{BASE_URL}/tv/{tv_id}"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "accept": "application/json"
-    }
-    params = {
-        "language": "fr-FR",
-        "append_to_response": "credits,videos"
-    }
-    
-    response = requests.get(url, headers=headers, params=params)
-    
-    if response.status_code == 200:
-        tv_show = response.json()
+    params = {"append_to_response": "credits,videos"}
+    tv_show = call_tmdb_api(f"/tv/{tv_id}", params)
+    if "results" not in tv_show or tv_show.get("id"):
         return render_template('tv_detail.html', 
                                tv_show=tv_show, 
                                image_base_url=IMAGE_BASE_URL,
