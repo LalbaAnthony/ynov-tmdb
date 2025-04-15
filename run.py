@@ -1,9 +1,9 @@
 # run.py
 from app import create_app
-from app.services import run_etl
+from app.models import fill_media_from_tmdb
 
 app = create_app()
 
 if __name__ == '__main__':
-    run_etl()  # Would ordinarily be run in a separate script, called by a cron job
+    fill_media_from_tmdb()  # Would ordinarily be run in a separate script, called by a cron job
     app.run(debug=True)

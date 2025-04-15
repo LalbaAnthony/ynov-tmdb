@@ -1,9 +1,8 @@
 # app/routes.py
 from flask import Blueprint, render_template, request, url_for
-from app.services import get_popular_movies, get_popular_tv_shows, get_image_base_url, run_etl, call_tmdb_api
+from app.tmdb import get_popular_movies, get_popular_tv_shows, get_image_base_url, call_tmdb_api
 from app.models import fetch_media, fetch_suggestion
-from app.services import get_popular_movies, get_popular_tv_shows
-from app.services import get_popular_movies  # if needed
+from app.tmdb import get_popular_movies  # if needed
 
 main = Blueprint('main', __name__)
 
@@ -13,7 +12,7 @@ def index():
     query = request.args.get('query', '')
     
     if query:
-        from app.services import call_tmdb_api
+        from app.tmdb import call_tmdb_api
         movies_data = call_tmdb_api("/search/movie", {"query": query, "page": page})
         results = movies_data.get('results', [])
     else:
