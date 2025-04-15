@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Suggestion de film ou de série</h1>
-<form method="post" action="{{ url_for('suggestion') }}">
+<form method="post" action="{{ url_for('main.suggestion') }}">
     <div class="form-group mb-4">
         <label for="media_type">Type :</label>
         <select name="media_type" id="media_type" class="form-control">

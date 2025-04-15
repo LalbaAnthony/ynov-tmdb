@@ -32,26 +32,26 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">TMDB Explorer</a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">TMDB Explorer</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">Films populaires</a>
+                        <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('main.index') }}">Films populaires</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'now_playing' %}active{% endif %}" href="{{ url_for('now_playing') }}">En salle</a>
+                        <a class="nav-link {% if active_page == 'now_playing' %}active{% endif %}" href="{{ url_for('main.now_playing') }}">En salle</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'tv_shows' %}active{% endif %}" href="{{ url_for('tv_shows') }}">Séries TV</a>
+                        <a class="nav-link {% if active_page == 'tv_shows' %}active{% endif %}" href="{{ url_for('main.tv_shows') }}">Séries TV</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'suggestion' %}active{% endif %}" href="{{ url_for('suggestion') }}">Suggestion</a>
+                        <a class="nav-link {% if active_page == 'suggestion' %}active{% endif %}" href="{{ url_for('main.suggestion') }}">Suggestion</a>
                     </li>
                 </ul>
-                <form class="d-flex" action="{{ url_for('index') }}" method="GET">
+                <form class="d-flex" action="{{ url_for('main.index') }}" method="GET">
                     <input class="form-control me-2" type="search" name="query" placeholder="Rechercher un film...">
                     <button class="btn btn-outline-light" type="submit">Rechercher</button>
                 </form>
