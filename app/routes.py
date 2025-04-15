@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, url_for
 from app.tmdb import get_popular_movies, get_popular_tv_shows, get_image_base_url, call_tmdb_api
 from app.models import fetch_media, fetch_suggestion
-from app.tmdb import get_popular_movies  # if needed
+from app.tmdb import get_popular_movies  
 
 main = Blueprint('main', __name__)
 
