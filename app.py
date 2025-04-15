@@ -173,7 +173,12 @@ def call_tmdb_api(endpoint, params=None):
     response = requests.get(url, headers=headers, params=default_params)
     
     if response.status_code == 200:
-        return response.json()
+        data = response.json()
+
+        # Map id on api_id
+        for item in data.get("results", []):
+            item["api_id"] = item.pop("id", None)
+        return data
     else:
         print(f"Error fetching {url}: {response.status_code}")
         return {"results": [], "total_pages": 0}
