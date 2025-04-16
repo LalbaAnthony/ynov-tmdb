@@ -54,7 +54,7 @@ def insert_media(item):
     conn = connection()
     c = conn.cursor()
     c.execute("""
-        INSERT INTO media (*)
+        INSERT INTO media (id, media_type, title, original_title, release_date, overview, poster_path, vote_average)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         item['id'],
