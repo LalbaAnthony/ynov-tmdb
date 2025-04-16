@@ -1,7 +1,7 @@
 # app/routes.py
 from flask import Blueprint, render_template, request, url_for
 from app.tmdb import call_tmdb_api, get_movies, get_tv_shows, get_movie_detail, get_tv_show_detail, get_tv_genres, get_movie_genres, get_image_base_url
-from app.models import fetch_suggestion, fetch_medias
+from app.models import fetch_suggestion, fetch_medias, fetch_media
 
 main = Blueprint('main', __name__)
 
@@ -14,14 +14,9 @@ def index():
     movies = get_movies(search=query, page=page, genre_id=genre_id)
     genres = get_movie_genres()
 
-    # If movies is empty, then we need to fetch the movies from the database
     if not movies.get('results'):
         movies['results'] = fetch_medias('movie', page=page)
     
-    # TODO: Uncomment the following lines to debug the fetched movies from DB
-    # print(movies.get('results', [])[0])
-    # print(fetch_medias('movie', page=page)[0])
-
     return render_template(
         'index.html',
         movies=movies.get('results', []),
@@ -43,6 +38,9 @@ def now_playing():
 
     movies = get_movies(search=query, page=page, genre_id=genre_id, now_playing=True)
     genres = get_movie_genres()
+
+    if not movies.get('results'):
+        movies['results'] = fetch_medias('movie', page=page, now_playing=True)
 
     return render_template(
         'movie/movie_list.html',
@@ -66,6 +64,9 @@ def movies():
     movies = get_movies(search=query, page=page, genre_id=genre_id)
     genres = get_movie_genres()
 
+    if not movies.get('results'):
+        movies['results'] = fetch_medias('movie', page=page)
+
     return render_template(
         'movie/movie_list.html',
         movies=movies.get('results', []),
@@ -88,6 +89,9 @@ def tv_shows():
     tv_shows = get_tv_shows(search=query, page=page, genre_id=genre_id)
     genres = get_tv_genres()
 
+    if not tv_shows.get('results'):
+        tv_shows['results'] = fetch_medias('tv', page=page)
+
     return render_template(
         'tv/tv_list.html',
         tv_shows=tv_shows.get('results', []),
@@ -106,7 +110,10 @@ def movie_detail(movie_id):
     
     movie = get_movie_detail(movie_id)
 
-    if "results" not in movie or movie.get("api_id"):
+    if not movie:
+        movie = fetch_media(movie_id)
+
+    if "results" not in movie or movie.get("id"):
         return render_template(
             'movie/movie_detail.html',
             movie=movie,
@@ -120,7 +127,10 @@ def movie_detail(movie_id):
 def tv_detail(tv_id):
     tv_show = get_tv_show_detail(tv_id)
 
-    if "results" not in tv_show or tv_show.get("api_id"):
+    if not tv_show:
+        tv_show = fetch_media(tv_id)
+
+    if "results" not in tv_show or tv_show.get("id"):
         return render_template(
             'tv/tv_detail.html',
             tv_show=tv_show,

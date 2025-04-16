@@ -48,10 +48,18 @@
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title tv-title">{{ tv.name }}</h5>
-                <p class="card-text"><small class="text-muted">{{ tv.first_air_date }}</small></p>
+                <p class="card-text">
+                    {% if tv.release_date %}
+                    <small class="text-muted">{{ tv.release_date }}</small>
+                    {% elif tv.first_air_date %}
+                    <small class="text-muted">{{ tv.first_air_date }}</small>
+                    {% else %}
+                    <small class="text-muted">Aucune date disponible</small>
+                    {% endif %}
+                </p>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="badge bg-warning text-dark">{{ tv.vote_average|round(1) }} / 10</span>
-                    <a href="{{ url_for('main.tv_detail', tv_id=tv.api_id) }}" class="btn btn-sm btn-outline-primary">Détails</a>
+                    <a href="{{ url_for('main.tv_detail', tv_id=tv.id) }}" class="btn btn-sm btn-outline-primary">Détails</a>
                 </div>
             </div>
         </div>
@@ -62,7 +70,7 @@
 <!-- Message si aucune série trouvée -->
 {% if not tv_shows %}
 <div class="alert alert-info text-center mt-5">
-    Aucune série trouvée pour ce genre.
+    Aucune série trouvée.
 </div>
 {% endif %}
 

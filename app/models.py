@@ -3,18 +3,18 @@ import sqlite3
 
 DB_PATH = "database.db"
 
-def db_connection():
+def connection():
     """Returns a new connection to the SQLite database."""
     return sqlite3.connect(DB_PATH)
 
 def create_db():
-    conn = db_connection()
+    conn = connection()
     c = conn.cursor()
-    c.execute("DROP TABLE IF EXISTS media")
+    c.execute("DROP TABLE IF EXISTS media") # This would be replaced with an importing script which would do a comparaison in a real-world scenario
     c.execute('''
         CREATE TABLE media (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            api_id INTEGER,
+            media_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER,
             media_type TEXT,
             title TEXT,
             original_title TEXT,
@@ -24,11 +24,11 @@ def create_db():
             vote_average REAL
         )
     ''')
-    c.execute("DROP TABLE IF EXISTS towatch")
+    c.execute("DROP TABLE IF EXISTS towatch") # This would be replaced with an importing script which would do a comparaison in a real-world scenario
     c.execute('''
         CREATE TABLE towatch (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            api_id INTEGER NOT NULL,
+            towatch_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER NOT NULL,
             media_type TEXT NOT NULL CHECK(media_type IN ('movie', 'tv')),
             added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -36,28 +36,28 @@ def create_db():
     conn.commit()
     conn.close()
 
-def clear_media():
-    conn = db_connection()
+def clear_medias():
+    conn = connection()
     c = conn.cursor()
     c.execute("DELETE FROM media")
     conn.commit()
     conn.close()
 
-def clear_towatch():
-    conn = db_connection()
+def clear_towatchs():
+    conn = connection()
     c = conn.cursor()
     c.execute("DELETE FROM towatch")
     conn.commit()
     conn.close()
 
 def insert_media(item):
-    conn = db_connection()
+    conn = connection()
     c = conn.cursor()
     c.execute("""
-        INSERT INTO media (api_id, media_type, title, original_title, release_date, overview, poster_path, vote_average)
+        INSERT INTO media (*)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        item['api_id'],
+        item['id'],
         item['media_type'],
         item['title'],
         item['original_title'],
@@ -69,27 +69,32 @@ def insert_media(item):
     conn.commit()
     conn.close()
 
-def fetch_medias(media_type='both', page=1, limit=20):
-    conn = db_connection()
+def fetch_medias(media_type='both', page=1, now_playing=False):
+    conn = connection()
     c = conn.cursor()
+    
+    limit=20
     offset = (page - 1) * limit
 
     params = []
     query = """
-        SELECT api_id, media_type, title, original_title, release_date, overview, poster_path, vote_average 
-        FROM media 
+        SELECT * 
+        FROM media
+        WHERE 1=1
     """
-    if media_type == 'movie':
-        query += " WHERE media_type = 'movie'"
-    elif media_type == 'tv':
-        query += " WHERE media_type = 'tv'"
-    else :
-        query += " WHERE media_type IN ('movie', 'tv')"
+    if media_type:
+        query += " AND media_type = ?"
+        params.append(media_type)
 
-    if limit and page:
-        params.append(limit)
-        params.append(offset)
-        query += " LIMIT ? OFFSET ?"
+    if now_playing:
+        query += " AND release_date >= date('now')"
+
+    print(f"Fetching media items from the database with query: {query} and params: {params}")
+
+    # if limit and page:
+        # params.append(limit)
+        # params.append(offset)
+        # query += " LIMIT ? OFFSET ?"
     
     c.execute(query, params)
     rows = c.fetchall()
@@ -98,7 +103,7 @@ def fetch_medias(media_type='both', page=1, limit=20):
     results = []
     for row in rows:
         results.append({
-            "api_id": row[0],
+            "id": row[0],
             "media_type": row[1],
             "title": row[2],
             "original_title": row[3],
@@ -107,26 +112,52 @@ def fetch_medias(media_type='both', page=1, limit=20):
             "poster_path": row[6],
             "vote_average": row[7]
         })
+    print(f"Fetched {results} media items from the database.")
     return results
 
-def insert_towatch(item):
-    conn = db_connection()
+def fetch_media(id):
+    conn = connection()
     c = conn.cursor()
     c.execute("""
-        INSERT INTO towatch (api_id, media_type)
+        SELECT * 
+        FROM media 
+        WHERE id = ?
+    """, (id,))
+    row = c.fetchone()
+    conn.close()
+    
+    if row:
+        return {
+            "id": row[0],
+            "media_type": row[1],
+            "title": row[2],
+            "original_title": row[3],
+            "release_date": row[4],
+            "overview": row[5],
+            "poster_path": row[6],
+            "vote_average": row[7]
+        }
+    else:
+        return None
+
+def insert_towatch(item):
+    conn = connection()
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO towatch (id, media_type)
         VALUES (?, ?)
     """, (
-        item['api_id'],
+        item['id'],
         item['media_type']
     ))
     conn.commit()
     conn.close()
 
 def fetch_suggestion(media_type=None, min_vote_average=None):
-    conn = db_connection()
+    conn = connection()
     c = conn.cursor()
     query = """
-        SELECT api_id, media_type, title, original_title, release_date, overview, poster_path, vote_average 
+        SELECT * 
         FROM media 
         WHERE 1=1
     """
@@ -144,7 +175,7 @@ def fetch_suggestion(media_type=None, min_vote_average=None):
     
     if row:
         return {
-            "api_id": row[0],
+            "id": row[0],
             "media_type": row[1],
             "title": row[2],
             "original_title": row[3],
@@ -166,12 +197,12 @@ def fill_media_from_tmdb(page=1):
     data_tv = get_tv_shows()
 
     if len(data_movies.get("results", [])) == 0 and len(data_tv.get("results", [])) == 0:
-            clear_media()
+            clear_medias()
 
     medias = []
     for movie in data_movies.get("results", []):
         medias.append({
-            "api_id": movie.get("api_id"),
+            "id": movie.get("id"),
             "media_type": "movie",
             "title": movie.get("title"),
             "original_title": movie.get("original_title"),
@@ -182,7 +213,7 @@ def fill_media_from_tmdb(page=1):
         })
     for tv in data_tv.get("results", []):
         medias.append({
-            "api_id": tv.get("api_id"),
+            "id": tv.get("id"),
             "media_type": "tv",
             "title": tv.get("name"),
             "original_title": tv.get("original_name"),

@@ -10,7 +10,7 @@
         <p class="card-text">Note : {{ suggestion.vote_average|default(0)|round(1) }} / 10</p>
         <p>Date de sortie : {{ suggestion.release_date }}</p>
         <p>{{ suggestion.overview }}</p>
-        <a href="{{ url_for('main.movie_detail', movie_id=suggestion.api_id) }}" class="btn btn-outline-primary">Détails</a>
+        <a href="{{ url_for('main.movie_detail', movie_id=suggestion.id) }}" class="btn btn-outline-primary">Détails</a>
     </div>
 </div>
 {% else %}

@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_SECRET = os.environ.get("API_SECRET")
-API_SECRET = os.environ.get("API_SECRET")
 BASE_URL = "https://api.themoviedb.org/3"
 IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
@@ -23,30 +22,30 @@ def call_tmdb_api(endpoint, params=None):
 
     if response.status_code == 200:
         data = response.json()
-        # Map 'id' to 'api_id'
+        # Map 'id' to 'id'
         for item in data.get("results", []):
-            item["api_id"] = item.pop("id", None)
+            item["id"] = item.pop("id", None)
         return data
     else:
         print(f"Error fetching {url}: {response.status_code}")
-        return {"results": [], "total_pages": 0}
+        return {"results": [], "total_pages": 0}    
 
 
 def get_movies(search="", page=1, genre_id=None, now_playing=False):
     """
     Récupère une liste de films depuis l'API TMDB avec options de filtrage
-    
+
     Args:
         search (str): Terme de recherche pour les films
         page (int): Numéro de page pour la pagination
         genre_id (int): Identifiant du genre pour filtrer les films
         now_playing (bool): Si True, récupère les films actuellement au cinéma
-    
+
     Returns:
         dict: Données des films formatées
     """
     params = {"page": page}
-    
+
     if now_playing:
         # Si now_playing est True, on utilise l'endpoint spécifique
         endpoint = "/movie/now_playing"
@@ -58,17 +57,17 @@ def get_movies(search="", page=1, genre_id=None, now_playing=False):
         # Sinon, récupérer les films populaires
         endpoint = "/discover/movie"
         params["sort_by"] = "popularity.desc"
-    
+
     # Ajouter le filtre de genre si spécifié et si nous ne sommes pas sur l'endpoint now_playing
     if genre_id and endpoint != "/movie/now_playing":
         params["with_genres"] = genre_id
-    
+
     # Si nous sommes sur l'endpoint now_playing et qu'un genre est spécifié,
     # nous devrons filtrer les résultats après avoir récupéré les données
-    post_filter_by_genre = (endpoint == "/movie/now_playing" and genre_id is not None)
-    
+    post_filter_by_genre = endpoint == "/movie/now_playing" and genre_id is not None
+
     data = call_tmdb_api(endpoint, params)
-    
+
     # Formater les résultats pour inclure l'URL complète des images
     if "results" in data:
         # Filtrer les résultats par genre si nécessaire
@@ -80,15 +79,23 @@ def get_movies(search="", page=1, genre_id=None, now_playing=False):
                 if isinstance(movie_genres, list) and genre_id in movie_genres:
                     filtered_results.append(movie)
             data["results"] = filtered_results
-            
+
         # Ajouter l'URL complète pour les posters
         for movie in data["results"]:
             if movie.get("poster_path"):
                 movie["poster_url"] = f"{IMAGE_BASE_URL}{movie['poster_path']}"
             else:
                 movie["poster_url"] = None
-    
+
+        # Parse the name/title so tv shows and movies have the same format. Terrible hack but ya know
+        for movie in data["results"]:
+            if movie.get("original_title") and not movie.get("original_name"):
+                movie["original_name"] = movie["original_title"]
+            if movie.get("title") and not movie.get("name"):
+                movie["name"] = movie["title"]
+
     return data
+
 
 def get_tv_shows(search="", page=1, genre_id=None):
     """
@@ -127,6 +134,13 @@ def get_tv_shows(search="", page=1, genre_id=None):
             else:
                 show["poster_url"] = None
 
+    # Parse the name/title so tv shows and movies have the same format. Terrible hack but ya know
+    for show in data["results"]:
+        if show.get("original_name") and not show.get("original_title"):
+            show["original_title"] = show["original_name"]
+        if show.get("name") and not show.get("title"):
+            show["title"] = show["name"]
+
     return data
 
 
@@ -160,7 +174,13 @@ def get_movie_detail(movie_id):
 
     # Remapper l'id pour être cohérent
     if "id" in data:
-        data["api_id"] = data.pop("id")
+        data["id"] = data.pop("id")
+
+    # Parse the name/title so tv shows and movies have the same format. Terrible hack but ya know
+    if data.get("original_title") and not data.get("original_name"):
+        data["original_name"] = data["original_title"]
+    if data.get("title") and not data.get("name"):
+        data["name"] = data["title"]
 
     return data
 
@@ -203,13 +223,20 @@ def get_tv_show_detail(show_id):
 
             # Remapper l'id pour être cohérent
             if "id" in season:
-                season["api_id"] = season.pop("id")
+                season["id"] = season.pop("id")
 
     # Remapper l'id pour être cohérent
     if "id" in data:
-        data["api_id"] = data.pop("id")
+        data["id"] = data.pop("id")
+
+    # Parse the name/title so tv shows and movies have the same format. Terrible hack but ya know
+    if data.get("original_title") and not data.get("original_name"):
+        data["original_name"] = data["original_title"]
+    if data.get("title") and not data.get("name"):
+        data["name"] = data["title"]
 
     return data
+
 
 def get_tv_genres():
     result = call_tmdb_api("/genre/tv/list")
@@ -217,11 +244,13 @@ def get_tv_genres():
         return result["genres"]
     return []
 
+
 def get_movie_genres():
     result = call_tmdb_api("/genre/movie/list")
     if "genres" in result:
         return result["genres"]
     return []
+
 
 def get_image_base_url():
     return IMAGE_BASE_URL

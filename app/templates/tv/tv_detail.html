@@ -83,7 +83,13 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
                             <span>Première diffusion:</span>
+                            {% if tv_show.release_date %}
+                            <span>{{ tv_show.release_date }}</span>
+                            {% elif tv_show.first_air_date %}
                             <span>{{ tv_show.first_air_date }}</span>
+                            {% else %}
+                            <span class="text-muted">Aucune date disponible</span>
+                            {% endif %}
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span>Note:</span>
