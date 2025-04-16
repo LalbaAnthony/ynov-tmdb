@@ -15,7 +15,7 @@ def create_db():
         CREATE TABLE media (
             media_id INTEGER PRIMARY KEY AUTOINCREMENT,
             id INTEGER,
-            media_type TEXT,
+            media_type TEXT NOT NULL CHECK(media_type IN ('movie', 'tv')),
             title TEXT,
             original_title TEXT,
             release_date TEXT,
@@ -78,7 +78,7 @@ def fetch_medias(media_type='both', page=1, now_playing=False):
 
     params = []
     query = """
-        SELECT * 
+        SELECT id, media_type, title, original_title, release_date, overview, poster_path, vote_average  
         FROM media
         WHERE 1=1
     """
@@ -91,10 +91,10 @@ def fetch_medias(media_type='both', page=1, now_playing=False):
 
     print(f"Fetching media items from the database with query: {query} and params: {params}")
 
-    # if limit and page:
-        # params.append(limit)
-        # params.append(offset)
-        # query += " LIMIT ? OFFSET ?"
+    if limit and page:
+        params.append(limit)
+        params.append(offset)
+        query += " LIMIT ? OFFSET ?"
     
     c.execute(query, params)
     rows = c.fetchall()
@@ -119,7 +119,7 @@ def fetch_media(id):
     conn = connection()
     c = conn.cursor()
     c.execute("""
-        SELECT * 
+        SELECT id, media_type, title, original_title, release_date, overview, poster_path, vote_average  
         FROM media 
         WHERE id = ?
     """, (id,))
@@ -140,7 +140,21 @@ def fetch_media(id):
     else:
         return None
 
+def is_media_in_towatch(item):
+    conn = connection()
+    c = conn.cursor()
+    c.execute("""
+        SELECT COUNT(*) FROM towatch 
+        WHERE id = ? AND media_type = ?
+    """, (item['id'], item['media_type']))
+    count = c.fetchone()[0]
+    conn.close()
+    return count > 0
+
 def insert_towatch(item):
+    if is_media_in_towatch(item):
+        print(f"Item {item['id']} already exists in towatch.")
+        return
     conn = connection()
     c = conn.cursor()
     c.execute("""
@@ -157,7 +171,7 @@ def fetch_suggestion(media_type=None, min_vote_average=None):
     conn = connection()
     c = conn.cursor()
     query = """
-        SELECT * 
+        SELECT id, media_type, title, original_title, release_date, overview, poster_path, vote_average  
         FROM media 
         WHERE 1=1
     """

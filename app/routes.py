@@ -1,7 +1,7 @@
 # app/routes.py
 from flask import Blueprint, render_template, request, url_for
 from app.tmdb import call_tmdb_api, get_movies, get_tv_shows, get_movie_detail, get_tv_show_detail, get_tv_genres, get_movie_genres, get_image_base_url
-from app.models import fetch_suggestion, fetch_medias, fetch_media
+from app.models import fetch_suggestion, fetch_medias, fetch_media, insert_towatch
 
 main = Blueprint('main', __name__)
 
@@ -153,6 +153,7 @@ def suggestion():
             min_vote = 0
 
         suggestion = fetch_suggestion(media_type=media_type, min_vote_average=min_vote)
+
         return render_template(
             "suggestion/suggestion_result.html",
             suggestion=suggestion,
@@ -161,3 +162,18 @@ def suggestion():
         )
     else:
         return render_template("suggestion/suggestion_form.html", active_page='suggestion')
+
+@main.route('/to-watch', methods=["GET", "POST"])
+def towatch():
+    if request.method == "POST":
+        media_type = request.form.get("media_type")
+        id = request.form.get("id", type=int)
+        
+        insert_towatch({
+            "id": id,
+            "media_type": media_type
+        })
+
+        return render_template("towatch/towatch_list.html", active_page='towatch', success=True)      
+    else:
+        return render_template("towatch/to-watch_list.html", active_page='to-watch')
