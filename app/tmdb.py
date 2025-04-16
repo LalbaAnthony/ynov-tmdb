@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 # Charge l'environnement
 load_dotenv()
 
-API_KEY = os.environ.get("API_KEY")
+API_SECRET = os.environ.get("API_SECRET")
 API_SECRET = os.environ.get("API_SECRET")
 BASE_URL = "https://api.themoviedb.org/3"
 IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
 
 def call_tmdb_api(endpoint, params=None):
-    headers = {"Authorization": f"Bearer {API_KEY}", "accept": "application/json"}
+    headers = {"Authorization": f"Bearer {API_SECRET}", "accept": "application/json"}
     default_params = {"language": "fr-FR"}
     if params:
         default_params.update(params)

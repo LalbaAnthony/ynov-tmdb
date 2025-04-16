@@ -6,7 +6,7 @@
 - [x] Séparation du code en trois couches:
   - Application
   - Domaine/Infra (BDD/API)
-- [ ] Ajouter un fonctionnalité qui permet à l'utilisateur d'enregistrer un liste de film/série à voir
+- [ ] Ajouter un fonctioncnalité qui permet à l'utilisateur d'enregistrer un liste de film/série à voir
 - [ ] L'utilisateur doit pouvoir ajouter un film ou une série même si la BDD ne répond pas, la liste doit être mise à jour au rétablissement du système
 - [ ] Comment gérer la communication avec l' utilisateur
 - [ ] Rédac README
