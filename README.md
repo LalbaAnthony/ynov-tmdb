@@ -24,3 +24,6 @@ Both movies and TV shows are stored in the same `media` table. We can retrieve e
 
 Database does not contains genres data of any kind. The filter feature is so disabled if the TMDB API is not available.
 
+### What happens if the server database is not available?
+
+All watch list data is first stored in the local storage. Then it is sent to the server when it is available. 5 tries are made to send the data to the server. If the server is still not available, the data is stored in the local storage until the server is available again. The data is then sent to the server and removed from the local storage.
