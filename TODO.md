@@ -8,5 +8,5 @@
   - Domaine/Infra (BDD/API)
 - [ ] Ajouter un fonctioncnalité qui permet à l'utilisateur d'enregistrer un liste de film/série à voir
 - [ ] L'utilisateur doit pouvoir ajouter un film ou une série même si la BDD ne répond pas, la liste doit être mise à jour au rétablissement du système
-- [ ] Comment gérer la communication avec l' utilisateur
+- [ ] Comment gérer la communication avec l'utilisateur
 - [ ] Rédac README

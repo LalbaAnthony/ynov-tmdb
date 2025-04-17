@@ -61,7 +61,8 @@
                 <a href="{{ url_for('main.tv_shows') }}" class="btn btn-outline-secondary">← Retour aux séries</a>
             </div>
             <div>
-                <form method="POST">
+                <form method="POST" action="{{ url_for('main.towatch') }}">
+                    <input type="hidden" name="media" value="{{ tv_show }}">
                     <button class="btn btn-primary">Ajouter à la watchlist</button>
                 </form>
             </div>

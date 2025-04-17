@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | Explorateur TMDB{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ title }}</h1>
+    </div>
+    
+    <!-- Affichage des films -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for media in medias %}
+        <div class="col">
+            <div class="card media-card h-100">
+                {% if media.poster_path %}
+                <img src="{{ image_base_url }}{{ media.poster_path }}" class="card-img-top media-poster" alt="{{ media.title }}">
+                {% else %}
+                <div class="card-img-top media-poster bg-secondary d-flex align-items-center justify-content-center">
+                    <span class="text-white">Pas d'image</span>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title media-title">{{ media.title }}</h5>
+                    <p class="card-text"><small class="text-muted">{{ media.release_date }}</small></p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-warning text-dark">{{ media.vote_average|round(1) }} / 10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Message si aucun film trouvé -->
+    {% if not medias %}
+    <div class="alert alert-info text-center mt-5">
+        Aucun élément trouvé.
+    </div>
+    {% endif %}
+{% endblock %}

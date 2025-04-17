@@ -1,7 +1,7 @@
 # app/routes.py
 from flask import Blueprint, render_template, request, url_for
 from app.tmdb import call_tmdb_api, get_movies, get_tv_shows, get_movie_detail, get_tv_show_detail, get_tv_genres, get_movie_genres, get_image_base_url
-from app.models import fetch_suggestion, fetch_medias, fetch_media, insert_towatch
+from app.models import fetch_suggestion, fetch_medias, fetch_media, insert_towatch, fetch_towatchs
 
 main = Blueprint('main', __name__)
 
@@ -166,14 +166,37 @@ def suggestion():
 @main.route('/to-watch', methods=["GET", "POST"])
 def towatch():
     if request.method == "POST":
-        media_type = request.form.get("media_type")
-        id = request.form.get("id", type=int)
+        media = {
+            "id": request.form.get("id"),
+            "media_type": request.form.get("media_type"),
+            "title": request.form.get("title"),
+            "original_title": request.form.get("original_title"),
+            "release_date": request.form.get("release_date"),
+            "overview": request.form.get("overview"),
+            "poster_path": request.form.get("poster_path"),
+            "vote_average": request.form.get("vote_average"),
+            "media_type": request.form.get("media_type")
+        }
         
-        insert_towatch({
-            "id": id,
-            "media_type": media_type
-        })
+        print(media)
 
-        return render_template("towatch/towatch_list.html", active_page='towatch', success=True)      
+        success = insert_towatch(media)
+
+        # return a json 
+        return {
+            "status": "success" if success else "error",
+            "message": "Media ajouté à la liste de lecture" if success else "Erreur lors de l'ajout du media",
+            "media": media if success else None
+        }, 200 if success else 500
     else:
-        return render_template("towatch/to-watch_list.html", active_page='to-watch')
+        medias = fetch_towatchs()
+        print(medias)
+
+        return render_template(
+            'towatch/towatch_list.html',
+            medias=medias,
+            title='A regarder',
+            image_base_url=get_image_base_url(),
+            active_page='towatch',
+            endpoint='main.towatch',
+        )
