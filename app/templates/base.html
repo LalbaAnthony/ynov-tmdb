@@ -79,3 +79,162 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
+
+<style>
+    :root {
+        --primary: #4194e2;
+        --primary-darker: #2a6db0;
+        --secondary: #ee5011;
+        --dark: #000000;
+        --light: #ffffff;
+        --success: #28a745;
+        --warning: #ffc107;
+        --danger: #dc3545;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // ================================================================
+        // NOTIF
+        // ================================================================
+
+        const NOTIFICATION_CONFIG = {
+            containerZIndex: 9999,
+            duration: 3000,
+            color: {
+                success: 'var(--success)',
+                warning: 'var(--warning)',
+                danger: 'var(--danger)',
+                info: 'var(--primary)',
+            }
+        };
+
+        let lastID = 1;
+
+        function notify(content, type = 'success', autoclose = true) {
+
+            if (!Object.keys(NOTIFICATION_CONFIG.color).includes(type)) {
+                console.error(`Invalid notification type: ${type}`);
+                return;
+            }
+
+            // Container
+            const notification = document.createElement('div');
+            notification.setAttribute('id', 'notification-' + lastID++);
+            notification.style.cssText = `
+                opacity: 1;
+                display: flex;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                max-width: 300px;
+                z-index: ${NOTIFICATION_CONFIG.containerZIndex};
+                padding: 10px 15px;
+                flex: 1;
+                border-radius: 25px;
+                box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+                transition: opacity 0.5s;
+                color: #fff;
+                background-color: ${NOTIFICATION_CONFIG.color[type]};
+                `;
+
+            // Text
+            const notificationText = document.createElement('span');
+            notificationText.textContent = content;
+
+            // Close button
+            const notificationCloseButton = document.createElement('div');
+            notificationCloseButton.innerHTML = '&#215;'; // cross logo
+            notificationCloseButton.style.cssText = `
+                cursor: pointer;
+                margin-left: 10px;
+                border-radius: 25px;
+                `;
+            notificationCloseButton.addEventListener('click', function () {
+                clearNotification(notification);
+            });
+
+            // Append
+            notification.appendChild(notificationText);
+            notification.appendChild(notificationCloseButton);
+
+            // Append to document
+            document.body.appendChild(notification);
+
+            // Auto close
+            if (autoclose) {
+                setTimeout(() => {
+                    clearNotification(notification);
+                }, NOTIFICATION_CONFIG.duration);
+            }
+        }
+
+        function clearNotification(notification) {
+            notification.style.opacity = 0;
+            setTimeout(() => {
+                notification.style.display = 'none';
+                notification.remove();
+            }, 500);
+        }
+
+        function clearNotifications() {
+            const notifications = document.querySelectorAll('[id^="notification-"]');
+            notifications.forEach((notification) => {
+                clearNotification(notification);
+            });
+        }
+
+        // ================================================================
+        // TO WATCH FORM
+        // ================================================================
+
+        const towatchForm = document.getElementById('towatch-form');
+        const towatchFormButton = document.getElementById('towatch-form-button');
+
+        if (towatchForm && towatchFormButton) {
+            towatchFormButton.addEventListener('click', async function () {
+                const formData = new FormData(towatchForm);
+                const data = Object.fromEntries(formData.entries());
+
+                const key = 'towatchQueue';
+                const current = JSON.parse(localStorage.getItem(key) || '[]');
+
+                // Prevent duplicates
+                if (!current.some(item => item.id === data.id)) {
+                    current.push(data); // FIFO: push at the end
+                    localStorage.setItem(key, JSON.stringify(current));
+                }
+
+                try {
+                    const response = await fetch('{{ url_for("main.towatch") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams(data),
+                    });
+
+                    if (response.ok) {
+                        console.log("Ajouté à la watchlist côté serveur.");
+                    } else {
+                        console.warn("Erreur lors de l'ajout distant.");
+                    }
+
+                    // Optional: handle response
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        notify("Ajouté à la watchlist !", 'success');
+                    } else {
+                        notify("Erreur lors de l'ajout à la watchlist.", 'danger');
+                    }
+
+                } catch (err) {
+                    console.error("Échec de la requête : ", err);
+                }
+            });
+        }
+    });
+</script>

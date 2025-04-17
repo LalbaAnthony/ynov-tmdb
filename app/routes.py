@@ -178,8 +178,6 @@ def towatch():
             "media_type": request.form.get("media_type")
         }
         
-        print(media)
-
         success = insert_towatch(media)
 
         # return a json 
@@ -190,7 +188,6 @@ def towatch():
         }, 200 if success else 500
     else:
         medias = fetch_towatchs()
-        print(medias)
 
         return render_template(
             'towatch/towatch_list.html',
