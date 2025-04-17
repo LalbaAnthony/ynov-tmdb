@@ -61,9 +61,16 @@
                 <a href="{{ url_for('main.tv_shows') }}" class="btn btn-outline-secondary">← Retour aux séries</a>
             </div>
             <div>
-                <form method="POST" action="{{ url_for('main.towatch') }}">
-                    <input type="hidden" name="media" value="{{ tv_show }}">
-                    <button class="btn btn-primary">Ajouter à la watchlist</button>
+                <form id="towatch-form">
+                    <input type="hidden" name="id" value="{{ movie.id }}">
+                    <input type="hidden" name="name" value="{{ movie.name }}">
+                    <input type="hidden" name="original_name" value="{{ movie.original_name }}">
+                    <input type="hidden" name="first_air_date" value="{{ movie.first_air_date }}">
+                    <input type="hidden" name="overview" value="{{ movie.overview }}">
+                    <input type="hidden" name="poster_path" value="{{ movie.poster_path }}">
+                    <input type="hidden" name="vote_average" value="{{ movie.vote_average }}">
+                    <input type="hidden" name="media_type" value="tv">
+                    <button id="towatch-form-button" type="button" class="btn btn-primary">Ajouter à la watchlist</button>
                 </form>
             </div>
         </div>

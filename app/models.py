@@ -231,24 +231,24 @@ def fill_db_from_tmdb(page=1):
         for movie in data_movies.get("results", []):
             medias.append({
                 "id": movie.get("id"),
-                "media_type": "movie",
                 "title": movie.get("title"),
                 "original_title": movie.get("original_title"),
                 "release_date": movie.get("release_date"),
                 "overview": movie.get("overview"),
                 "poster_path": movie.get("poster_path"),
-                "vote_average": movie.get("vote_average", 0)
+                "vote_average": movie.get("vote_average", 0),
+                "media_type": "movie"
             })
         for tv in data_tv.get("results", []):
             medias.append({
                 "id": tv.get("id"),
-                "media_type": "tv",
                 "title": tv.get("name"),
                 "original_title": tv.get("original_name"),
                 "release_date": tv.get("first_air_date"),
                 "overview": tv.get("overview"),
                 "poster_path": tv.get("poster_path"),
-                "vote_average": tv.get("vote_average", 0)
+                "vote_average": tv.get("vote_average", 0),
+                "media_type": "tv"
             })
 
         for media in medias:
